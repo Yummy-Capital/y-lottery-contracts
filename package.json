@@ -5,7 +5,7 @@
   "scripts": {
     "build": "npx hardhat compile",
     "test": "npx hardhat test",
-    "deploy-on-testnet": "npx hardhat run scripts/deploy.js --network testnet"
+    "deploy-on-testnet": "npx hardhat run scripts/deploy.ts --network testnet"
   },
   "author": "Yummy Capital <contact@yummy.capital>",
   "license": "ISC",
