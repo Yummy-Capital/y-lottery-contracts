@@ -4,9 +4,10 @@
   "description": "Yummy Lottery Solidity smart contracts",
   "scripts": {
     "build": "npx hardhat compile",
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "deploy-on-testnet": "npx hardhat run scripts/deploy.js --network testnet"
   },
-  "author": "contact@yummy.capital",
+  "author": "Yummy Capital <contact@yummy.capital>",
   "license": "ISC",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",

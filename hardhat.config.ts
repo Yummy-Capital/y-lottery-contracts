@@ -19,6 +19,21 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
+const getHDWallet = () => {
+  const { MNEMONIC, PRIVATE_KEY } = process.env;
+  if (MNEMONIC && MNEMONIC !== "") {
+    return {
+      mnemonic: MNEMONIC,
+    };
+  }
+
+  if (PRIVATE_KEY && PRIVATE_KEY !== "") {
+    return [PRIVATE_KEY];
+  }
+
+  throw Error("Private Key Not Set! Please set up .env");
+};
+
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
@@ -37,6 +52,11 @@ const config: HardhatUserConfig = {
     currency: "USD",
   },
   networks: {
+    testnet: {
+      url: "https://cronos-testnet-3.crypto.org:8545/",
+      accounts: getHDWallet(),
+    },
+
     hardhat: {
       hardfork: "berlin",
       gasPrice: 1,
