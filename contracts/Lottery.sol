@@ -89,8 +89,8 @@ contract Lottery is Ownable {
   // //////
 
   event LotteryDeactivated();
-  event SendCommission(uint256 amount, address to);
-  event SendRewards(uint256 amount, address to);
+  event SendCommission(uint256 amount, address indexed to);
+  event SendRewards(uint256 amount, address indexed to, uint256 paid);
 
   // ///////
   // getters
@@ -191,7 +191,11 @@ contract Lottery is Ownable {
     // =>
 
     payable(winner).transfer(reward);
-    emit SendRewards(reward, winner);
+    emit SendRewards(
+      reward,
+      winner,
+      participants[winner].tickets * ticketPrice
+    );
   }
 
   // pick the winner
