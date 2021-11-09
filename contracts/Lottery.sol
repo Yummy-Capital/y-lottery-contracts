@@ -16,7 +16,7 @@ contract Lottery is Ownable {
   }
 
   // lottery state
-  State private state;
+  State internal state;
 
   // participant data
   struct Participant {
@@ -26,44 +26,44 @@ contract Lottery is Ownable {
 
   // enumerable map of participants addresses,
   // represents index => address
-  EnumerableMap.UintToAddressMap private addresses;
+  EnumerableMap.UintToAddressMap internal addresses;
 
   // map of participants data,
   // represents address => Participant
-  mapping(address => Participant) private participants;
+  mapping(address => Participant) internal participants;
 
   // current participants counter
-  Counters.Counter private counter;
+  Counters.Counter internal counter;
 
   // manager (fee receiver)
-  address private manager;
+  address internal manager;
 
   // ticket price
-  uint256 private ticketPrice;
+  uint256 internal ticketPrice;
 
   // max participatns, once the maximum number of participants has been reached,
   // the lottery will be locked and a winner will have to be determined
-  uint256 private maxParticipants;
+  uint256 internal maxParticipants;
 
   // max duration
-  uint256 private maxDuration;
+  uint256 internal maxDuration;
 
   // service fee
-  uint256 private fee;
+  uint256 internal fee;
 
   // end time
-  uint256 private endTime;
+  uint256 internal endTime;
 
   // total tickets purchased
-  uint256 private tickets;
+  uint256 internal tickets;
 
   // bonded tokens
-  uint256 private tokens;
+  uint256 internal tokens;
 
   // strict/unlimited mode
   // in strict mode the participant can only buy one ticket,
   // otherwise any number is available for purchase
-  bool private strict;
+  bool internal strict;
 
   constructor(
     bool _strict,
@@ -109,9 +109,10 @@ contract Lottery is Ownable {
   function getInfo()
     external
     view
+    virtual
     returns (
-      // manager address
-      address,
+      // current state
+      State,
       // strict mode?
       bool,
       // ticket price
@@ -128,12 +129,16 @@ contract Lottery is Ownable {
       uint256,
       // bonded tokens
       uint256,
-      // current state
-      State
+      // fee
+      uint256,
+      // manager address
+      address,
+      // token address
+      address
     )
   {
     return (
-      manager,
+      state,
       strict,
       ticketPrice,
       counter.current(),
@@ -142,7 +147,9 @@ contract Lottery is Ownable {
       maxDuration,
       tickets,
       tokens,
-      state
+      fee,
+      manager,
+      address(0)
     );
   }
 
@@ -172,10 +179,28 @@ contract Lottery is Ownable {
   // private methods
   // ///////////////
 
+  // restart the lottery (reset state)
+  // =>
+
+  function restart() private {
+    for (uint256 i = 0; i < counter.current(); i++) {
+      delete participants[addresses.get(i)];
+      addresses.remove(i);
+    }
+
+    counter.reset();
+    tickets = 0;
+    tokens = 0;
+  }
+
+  // ////////////////
+  // internal methods
+  // ////////////////
+
   // pay reward
   // =>
 
-  function payReward(address winner) private {
+  function payReward(address winner) internal virtual {
     uint256 commission = (tokens * fee) / 10000;
     uint256 reward = tokens - commission;
 
@@ -201,7 +226,7 @@ contract Lottery is Ownable {
   // pick the winner
   // =>
 
-  function pickWinner() private {
+  function pickWinner() internal {
     if (counter.current() == 0) {
       restart();
       return;
@@ -227,8 +252,8 @@ contract Lottery is Ownable {
       // =>
 
       if (
-        rnd >= ticketsLooped + 1 &&
-        rnd <= ticketsLooped + participants[addresses.get(i)].tickets
+        rnd >= ticketsLooped &&
+        rnd <= ticketsLooped + participants[addresses.get(i)].tickets - 1
       ) {
         payReward(addresses.get(i));
         restart();
@@ -241,20 +266,6 @@ contract Lottery is Ownable {
     // will never be reached
   }
 
-  // restart the lottery (reset state)
-  // =>
-
-  function restart() private {
-    for (uint256 i = 0; i < counter.current(); i++) {
-      delete participants[addresses.get(i)];
-      addresses.remove(i);
-    }
-
-    counter.reset();
-    tickets = 0;
-    tokens = 0;
-  }
-
   // ////////////////
   // external methods
   // ////////////////
@@ -262,11 +273,19 @@ contract Lottery is Ownable {
   // enter to the lottery
   // =>
 
-  function enter(uint256 ticketsToBePurchased) external payable {
+  function enter(uint256 ticketsToBePurchased) external payable virtual {
     // check state
     // =>
 
     require(state == State.Active, "INVALID_STATE");
+
+    // check the possibility of buying tickets
+    // =>
+
+    require(
+      !strict || participants[msg.sender].tickets == 0,
+      "IMPOSSIBLE_TO_BUY_MORE"
+    );
 
     // check tickets amount
     // in strict mode the participant can only buy one ticket,
@@ -289,28 +308,20 @@ contract Lottery is Ownable {
       "INCORRECT_TICKETS_COST"
     );
 
-    // check the possibility of buying tickets
-    // =>
-
-    require(
-      !strict || participants[msg.sender].tickets == 0,
-      "IMPOSSIBLE_TO_BUY_MORE"
-    );
-
-    // add new participant
-    // =>
-
-    if (participants[msg.sender].tickets == 0) {
-      addresses.set(counter.current(), msg.sender);
-      counter.increment();
-    }
-
     // buy tickets
     // =>
 
     participants[msg.sender].tickets += ticketsToBePurchased;
     tickets += ticketsToBePurchased;
     tokens += msg.value;
+
+    // add new participant
+    // =>
+
+    if (participants[msg.sender].tickets == ticketsToBePurchased) {
+      addresses.set(counter.current(), msg.sender);
+      counter.increment();
+    }
 
     if (counter.current() == maxParticipants || block.timestamp >= endTime) {
       pickWinner();

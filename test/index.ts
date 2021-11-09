@@ -80,8 +80,8 @@ describe("Lottery", function () {
 
       const information = await lottery.getInfo();
 
-      // manager address
-      expect(information[0]).to.equal(manager);
+      // current state
+      expect(information[0]).to.equal(1);
 
       // strict mode?
       expect(information[1]).to.equal(strict);
@@ -107,8 +107,16 @@ describe("Lottery", function () {
       // bonded tokens
       expect(information[8]).to.equal(0);
 
-      // current state
-      expect(information[9]).to.equal(1);
+      // fee
+      expect(information[9]).to.equal(fee);
+
+      // manager address
+      expect(information[10]).to.equal(manager);
+
+      // token address
+      expect(information[11]).to.equal(
+        "0x0000000000000000000000000000000000000000"
+      );
     });
   });
 
