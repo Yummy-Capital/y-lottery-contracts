@@ -183,7 +183,17 @@ contract ERC20Lottery is Lottery {
     if (participants[msg.sender].tickets == ticketsToBePurchased) {
       addresses.set(counter.current(), msg.sender);
       counter.increment();
+
+      // start the countdown after the first participant is come
+      // =>
+
+      if (counter.current() == 1) {
+        endTime = block.timestamp + maxDuration;
+      }
     }
+
+    // pick the winner if max participants reached
+    // =>
 
     if (counter.current() == maxParticipants || block.timestamp >= endTime) {
       pickWinner();
