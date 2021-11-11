@@ -12,9 +12,12 @@ async function main() {
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
   const tokenAddress = "0xe8606cE9a060BEA3CB73fd9CF2204Da9fc938234";
+  const tokenDecimals = "18";
+  const price = "500";
+
   const strict = false;
-  const ticketPrice = ethers.utils.parseEther("100");
-  const maxParticipants = 5;
+  const ticketPrice = ethers.utils.parseUnits(price, tokenDecimals);
+  const maxParticipants = 15;
   const maxDuration = 7 * 24 * 60 * 60;
   const fee = 25;
 
