@@ -57,6 +57,11 @@ const config: HardhatUserConfig = {
       accounts: getHDWallet(),
     },
 
+    mainnet: {
+      url: "https://evm-cronos.crypto.org",
+      accounts: getHDWallet(),
+    },
+
     hardhat: {
       hardfork: "berlin",
       gasPrice: 1,

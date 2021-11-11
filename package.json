@@ -6,7 +6,9 @@
     "build": "npx hardhat compile",
     "test": "npx hardhat test",
     "deploy-on-testnet": "npx hardhat run scripts/deploy.ts --network testnet",
-    "erc20-deploy-on-testnet": "npx hardhat run scripts/ERC20Deploy.ts --network testnet"
+    "deploy-on-mainnet": "npx hardhat run scripts/deploy.ts --network mainnet",
+    "erc20-deploy-on-testnet": "npx hardhat run scripts/ERC20Deploy.ts --network testnet",
+    "erc20-deploy-on-mainnet": "npx hardhat run scripts/ERC20Deploy.ts --network mainnet"
   },
   "author": "Yummy Capital <contact@yummy.capital>",
   "license": "ISC",
